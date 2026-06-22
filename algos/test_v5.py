@@ -209,8 +209,9 @@ def test(args, test_model, env, log_file, add_str, summary_dir):
     model_vae = BetaVAE(in_channels=2, hist_dim=c_len, latent_dim=latent_dim).type(dtype)
     model_actor.eval()
     model_vae.eval()
-    model_actor.load_state_dict(torch.load(test_model[0]))
-    model_vae.load_state_dict(torch.load(test_model[1]))
+    map_location = None if torch.cuda.is_available() else torch.device('cpu')
+    model_actor.load_state_dict(torch.load(test_model[0], map_location=map_location))
+    model_vae.load_state_dict(torch.load(test_model[1], map_location=map_location))
 
     # total_num_actor = sum(p.numel() for p in model_actor.parameters() if p.requires_grad)
     # print(total_num_actor)

@@ -251,8 +251,9 @@ def run_train(args, rebuff_p, video_size_file):
         model_vae_save_path = './saved_models/0325/VAE_imrl_1680.model'
 
     # RL part
-    model_vae_para = torch.load(model_vae_save_path)
-    model_actor_para = torch.load(model_actor_save_path)
+    map_location = None if torch.cuda.is_available() else torch.device('cpu')
+    model_vae_para = torch.load(model_vae_save_path, map_location=map_location)
+    model_actor_para = torch.load(model_actor_save_path, map_location=map_location)
 
     train_ppo_v6(model_actor_para, model_vae_para, 
             train_env, valid_env, args, add_str, log_dir_path)

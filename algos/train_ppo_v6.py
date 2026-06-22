@@ -490,6 +490,12 @@ def train_ppo_v6(model_actor_para, model_vae_para, train_env, valid_env, \
                 # torch.save(model_critic.state_dict(), critic_save_path)
                 torch.save(vae_net.state_dict(), vae_save_path)
 
+            # Deterministic stopping: the original code relies on a manual
+            # Ctrl+C (while True). --max-epochs makes adaptation reproducible.
+            max_epochs = getattr(args, 'max_epochs', 0)
+            if max_epochs and epoch >= max_epochs:
+                break
+
         writer.close()
     
 

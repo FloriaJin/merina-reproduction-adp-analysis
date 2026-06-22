@@ -97,6 +97,9 @@ parser.add_argument('--to', action='store_true', help='Use Oboe traces')
 parser.add_argument('--t3g', action='store_true', help='Use HSDPA traces')
 parser.add_argument('--tp', action='store_true', help='Use Puffer-211017 traces')
 parser.add_argument('--tp2', action='store_true', help='Use Puffer-220218 traces')
+parser.add_argument('--max-epochs', nargs='?', const=0, default=0, type=int, help='Stop training after this many epochs (0 = run forever, original behavior)')
+parser.add_argument('--act-model', default=None, help='Override path to the actor/policy model used in --test mode')
+parser.add_argument('--vae-model', default=None, help='Override path to the VAE model used in --test mode')
 
 
 def main():
@@ -140,7 +143,13 @@ def main():
     rebuff_p = REBUF_PENALTY_log if args.log else REBUF_PENALTY_lin
 
     test_model_ = [TEST_MODEL_ACT_LOG, TEST_MODEL_VAE_LOG] if args.log \
-                        else [TEST_MODEL_ACT_LIN, TEST_MODEL_VAE_LIN] 
+                        else [TEST_MODEL_ACT_LIN, TEST_MODEL_VAE_LIN]
+    # Allow evaluating an arbitrary checkpoint (e.g. an adapted model) without
+    # overwriting the shipped pretrained models.
+    if args.act_model is not None:
+        test_model_[0] = args.act_model
+    if args.vae_model is not None:
+        test_model_[1] = args.vae_model
     video_size_file = './envs/video_size/Mao/video_size_' #video size file
     # video_size_file = './envs/video_size/Avengers/video_size_'
 
@@ -191,8 +200,9 @@ def main():
             torch.save(model_vae_para, model_vae_save_path)
 
         # RL part
-        model_vae_para = torch.load(model_vae_save_path)
-        model_actor_para = torch.load(model_actor_save_path)
+        map_location = None if torch.cuda.is_available() else torch.device('cpu')
+        model_vae_para = torch.load(model_vae_save_path, map_location=map_location)
+        model_actor_para = torch.load(model_actor_save_path, map_location=map_location)
 
         train_ppo_v6(model_actor_para, model_vae_para, train_env, valid_env, args, add_str, log_dir_path)
 

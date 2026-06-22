@@ -9,10 +9,18 @@
 
 saved_models/*
 
-# Ignore results files
+# Ignore results files (raw per-trace logs and checkpoints), but keep the
+# reproduction analysis artifacts referenced by README.md
 Results/*
+!Results/comparison_table.csv
+!Results/comparison_chart.png
+!Results/adp_curve.png
+!Results/adp_puffer_bar.png
 
 envs/traces/*
+
+# Python virtual environment
+.venv/
 
 # Ignore configuration files
 *.vscode
